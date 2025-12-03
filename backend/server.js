@@ -4,11 +4,15 @@ const helmet = require('helmet');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const fs = require('fs');
+const { initializeDatabase } = require('./database/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+initializeDatabase();
+app.set('trust proxy', 1);
 app.use(helmet({
     contentSecurityPolicy: false // Disable for development, configure properly in production
 }));

@@ -5,13 +5,27 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const fs = require('fs');
-const { initializeDatabase } = require('./database/db');
+const bcrypt = require('bcrypt');
+const { initializeDatabase, queryOne, run } = require('./database/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
 initializeDatabase();
+(
+    async () => {
+        try {
+            const existing = queryOne('SELECT id FROM users WHERE username = ?', ['admin']);
+            if (!existing) {
+                const hashed = await bcrypt.hash('admin123', 10);
+                run('INSERT INTO users (username, password_hash, email, role) VALUES (?, ?, ?, ?)', ['admin', hashed, 'admin@omkrishnapuram.org', 'admin']);
+            }
+        } catch (e) {
+            console.error('Startup seed error:', e);
+        }
+    }
+)();
 app.set('trust proxy', 1);
 app.use(helmet({
     contentSecurityPolicy: false // Disable for development, configure properly in production
